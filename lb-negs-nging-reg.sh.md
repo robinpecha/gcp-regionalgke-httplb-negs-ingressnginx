@@ -13,9 +13,8 @@ echo $CLUSTER_NAME ; echo $REGION ; echo $YOURDOMAIN
 
 ## Create the cluster
 ```
-gcloud container clusters create $CLUSTER_NAME --region $REGION --machine-type "e2-medium" --enable-ip-alias --num-nodes=2 ; soundalertt
+gcloud container clusters create $CLUSTER_NAME --region $REGION --machine-type "e2-medium" --enable-ip-alias --num-nodes=2
 ```
-time gcloud container clusters create $CLUSTER_NAME --region $REGION --machine-type "e2-medium" --enable-ip-alias --num-nodes=2 ; soundalertt
 
 ## add the helm ingress-nginx 
 ```
@@ -37,7 +36,7 @@ EOF
 
 And install it:
 ```
-helm install -f values.regional.yaml ingress-nginx ingress-nginx/ingress-nginx ; soundalertt
+helm install -f values.regional.yaml ingress-nginx ingress-nginx/ingress-nginx
 ```
 
 ## install dummy web server
@@ -84,7 +83,7 @@ EOF
 ```
 Apply this config:
 ```
-kubectl apply -f dummy-app-lightweb.yaml ; soundalert
+kubectl apply -f dummy-app-lightweb.yaml
 ```
 Now you can check if is your dummy web server works :
 ```
@@ -133,45 +132,45 @@ EOF
 ```
 And apply it:
 ```
-kubectl apply -f dummy-ingress.yaml ; soundalert
+kubectl apply -f dummy-ingress.yaml
 ```
 
 ## Find the network tags and zone of ingress
 ```
-NETWORK_TAGS=$(gcloud compute instances list --filter="name=( $(kubectl get pod -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].spec.nodeName}') )" --format="value(tags.items[0])") ; echo $NETWORK_TAGS ; soundalert
+NETWORK_TAGS=$(gcloud compute instances list --filter="name=( $(kubectl get pod -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].spec.nodeName}') )" --format="value(tags.items[0])") ; echo $NETWORK_TAGS
 
-NODEZONE=$(gcloud compute instances list --filter="name=( $(kubectl get pod -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].spec.nodeName}') )" --format="value(zone)"); echo $NODEZONE ; soundalert
+NODEZONE=$(gcloud compute instances list --filter="name=( $(kubectl get pod -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].spec.nodeName}') )" --format="value(zone)"); echo $NODEZONE
 ```
 
 ## Configure the firewall
 ```
-gcloud compute firewall-rules create $CLUSTER_NAME-lb-fw --allow tcp:80 --source-ranges 130.211.0.0/22,35.191.0.0/16 --target-tags $NETWORK_TAGS ; soundalert
+gcloud compute firewall-rules create $CLUSTER_NAME-lb-fw --allow tcp:80 --source-ranges 130.211.0.0/22,35.191.0.0/16 --target-tags $NETWORK_TAGS
 ```
 ## Add health check configuration
 ```
-gcloud compute health-checks create http app-service-80-health-check --request-path /healthz --port 80 --check-interval 60 --unhealthy-threshold 3 --healthy-threshold 1 --timeout 5 ; soundalert
+gcloud compute health-checks create http app-service-80-health-check --request-path /healthz --port 80 --check-interval 60 --unhealthy-threshold 3 --healthy-threshold 1 --timeout 5
 ```
 
 ## Add the backend service
 ```
-gcloud compute backend-services create $CLUSTER_NAME-lb-backend --health-checks app-service-80-health-check --port-name http --global --enable-cdn --connection-draining-timeout 300 ; soundalert
+gcloud compute backend-services create $CLUSTER_NAME-lb-backend --health-checks app-service-80-health-check --port-name http --global --enable-cdn --connection-draining-timeout 300
 ```
 
 ## Attach our NEG to the backend service
 ```
-gcloud compute backend-services add-backend $CLUSTER_NAME-lb-backend --network-endpoint-group=ingress-nginx-80-neg --network-endpoint-group-zone=$NODEZONE --balancing-mode=RATE --capacity-scaler=1.0 --max-rate-per-endpoint=1.0 --global ; soundalert
+gcloud compute backend-services add-backend $CLUSTER_NAME-lb-backend --network-endpoint-group=ingress-nginx-80-neg --network-endpoint-group-zone=$NODEZONE --balancing-mode=RATE --capacity-scaler=1.0 --max-rate-per-endpoint=1.0 --global
 ```
 
 ## Setup the frontend
 ```
-gcloud compute url-maps create $CLUSTER_NAME-url-map --default-service $CLUSTER_NAME-lb-backend ; soundalert
-gcloud compute target-http-proxies create $CLUSTER_NAME-http-proxy --url-map $CLUSTER_NAME-url-map ; soundalert
-gcloud compute forwarding-rules create $CLUSTER_NAME-forwarding-rule --global --ports 80 --target-http-proxy $CLUSTER_NAME-http-proxy ; soundalert
+gcloud compute url-maps create $CLUSTER_NAME-url-map --default-service $CLUSTER_NAME-lb-backend
+gcloud compute target-http-proxies create $CLUSTER_NAME-http-proxy --url-map $CLUSTER_NAME-url-map
+gcloud compute forwarding-rules create $CLUSTER_NAME-forwarding-rule --global --ports 80 --target-http-proxy $CLUSTER_NAME-http-proxy
 ```
 
 ## enable logging
 ```
-gcloud compute backend-services update $CLUSTER_NAME-lb-backend --enable-logging --global ; soundalert
+gcloud compute backend-services update $CLUSTER_NAME-lb-backend --enable-logging --global
 ```
 
 ## Test
@@ -185,24 +184,24 @@ echo curl -s -I http://$YOURDOMAIN/ #200
 # cleanup
 ```
 # delete the forwarding-rule aka frontend
-gcloud -q compute forwarding-rules delete $CLUSTER_NAME-forwarding-rule --global ; soundalert
+gcloud -q compute forwarding-rules delete $CLUSTER_NAME-forwarding-rule --global
 # delete the http proxy
-gcloud -q compute target-http-proxies delete $CLUSTER_NAME-http-proxy ; soundalert
+gcloud -q compute target-http-proxies delete $CLUSTER_NAME-http-proxy
 # delete the url map
-gcloud -q compute url-maps delete $CLUSTER_NAME-url-map ; soundalert
+gcloud -q compute url-maps delete $CLUSTER_NAME-url-map
 # delete the backend
-gcloud -q compute backend-services delete $CLUSTER_NAME-lb-backend --global ; soundalert
+gcloud -q compute backend-services delete $CLUSTER_NAME-lb-backend --global
 # delete the health check
-gcloud -q compute health-checks delete app-service-80-health-check ; soundalert
+gcloud -q compute health-checks delete app-service-80-health-check
 # delete the firewall rule
-gcloud -q compute firewall-rules delete $CLUSTER_NAME-lb-fw ; soundalert
+gcloud -q compute firewall-rules delete $CLUSTER_NAME-lb-fw
 
-kubectl delete -f dummy-ingress.yaml ; soundalert
-kubectl delete -f dummy-app-lightweb.yaml ; soundalert
-helm delete ingress-nginx ; soundalert
+kubectl delete -f dummy-ingress.yaml
+kubectl delete -f dummy-app-lightweb.yaml
+helm delete ingress-nginx
 
 # delete the cluster
-gcloud -q container clusters delete $CLUSTER_NAME --zone=$ZONE ; soundalertt
+gcloud -q container clusters delete $CLUSTER_NAME --zone=$ZONE
 # delete the NEG  
 gcloud -q compute network-endpoint-groups delete ingress-nginx-80-neg --zone=$REGION-a
 gcloud -q compute network-endpoint-groups delete ingress-nginx-80-neg --zone=$REGION-b
