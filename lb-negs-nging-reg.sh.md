@@ -1,7 +1,6 @@
 # GCP - HTTP LOAD BALANCER > NEGS > REGIONAL GKE CLUSTER > INGRESS-NGINX
 
-Based on https://gist.githubusercontent.com/gabihodoroaga/1289122db3c5d4b6c59a43b8fd659496/raw/85196b969c80dcd89594783a7178db6603a77f43/ingress-nginx-on-gke.md  
-Thanks to gabihodoroaga
+Based on [tutorial](https://gist.github.com/gabihodoroaga/1289122db3c5d4b6c59a43b8fd659496) of [Gabriel Hodoroaga](https://hodo.dev/posts/post-27-gcp-using-neg/).
 
 ## VARS
 Replace at least YOURDOMAIN.
