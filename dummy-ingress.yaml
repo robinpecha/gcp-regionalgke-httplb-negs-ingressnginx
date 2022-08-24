@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
 spec:
   rules:
-  - host: "chimtest1.robinpecha.cz"
+  - host: "your-domain-here.com"
     http:
       paths:
       - path: /
