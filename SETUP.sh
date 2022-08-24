@@ -9,20 +9,16 @@ gcloud container clusters create $CLUSTER_NAME --region $REGION --machine-type "
 # add the ingress-nginx repo
 helm repo update
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-
-# create values.regional.yaml with this content:
-controller:
-  service:
-    type: ClusterIP
-    annotations:
-      cloud.google.com/neg: '{"exposed_ports": {"80":{"name": "ingress-nginx-80-neg"}}}'
-      
+   
 # and install the ingress-nginx
 helm install -f values.regional.yaml ingress-nginx ingress-nginx/ingress-nginx
 
 # Create the dummy app 
 # apply the configuration
 kubectl apply -f dummy-app-lightweb.yaml
+
+# adapt url in dummy-ingress.yaml
+- host: "your-domain-here.com"
 
 # create the ingress object
 # -- give it some time to deploy previous one --
