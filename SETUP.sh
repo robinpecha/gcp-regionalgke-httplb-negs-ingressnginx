@@ -43,7 +43,7 @@ gcloud compute backend-services add-backend $CLUSTER_NAME-lb-backend --network-e
 
 # create certificate
 CERTIFICATE_NAME="www-ssl-cert" ; echo $CERTIFICATE_NAME
-DOMAIN_LIST="yourdomain.com" ; echo $DOMAIN_LIST
+DOMAIN_LIST="your-domain-here.com" ; echo $DOMAIN_LIST
 gcloud compute ssl-certificates create $CERTIFICATE_NAME --domains=$DOMAIN_LIST --global
 
 # you can check certificate in its status
@@ -65,7 +65,7 @@ gcloud compute backend-services update $CLUSTER_NAME-lb-backend --enable-logging
 # Test
 IP_ADDRESS=$(gcloud compute forwarding-rules describe $CLUSTER_NAME-forwarding-rule --global --format="value(IPAddress)") ; echo $IP_ADDRESS
 curl -s -I https://$IP_ADDRESS/
-curl -s -I https://yourdomain.com/
+curl -s -I https://your-domain-here.com/
 
 
 ################
