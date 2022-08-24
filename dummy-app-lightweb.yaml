@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lightweb
+spec:
+  selector:
+    matchLabels:
+      app: dummy
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: dummy
+    spec:
+      containers:
+      - name: lightweb
+        image: alastairhm/alpine-lighttpd-php
+        ports:
+        - name: http
+          containerPort: 80
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", 'wget https://raw.githubusercontent.com/robinpecha/hello-world/main/php-header/index.php -P /var/www/']
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dummy-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: dummy
